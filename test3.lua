@@ -6,20 +6,23 @@ local lastcharmsg
 local lastusermsg
 
 -- 토글 값 가져오기
+local function nulltonil(value)
+    return (value ~= "null") and value or nil
+end
 -- 시작 나이 변수
-local tgAge = getGlobalVar(triggerId, "toggle_mnp_age") or "24"
-local tgBdY = getGlobalVar(triggerId, "toggle_mnp_bd_y")
-local tgBdM = getGlobalVar(triggerId, "toggle_mnp_bd_m")
-local tgBdD = getGlobalVar(triggerId, "toggle_mnp_bd_d")
+local tgAge = nulltonil(getGlobalVar(triggerId, "toggle_mnp_age")) or "24"
+local tgBdY = nulltonil(getGlobalVar(triggerId, "toggle_mnp_bd_y"))
+local tgBdM = nulltonil(getGlobalVar(triggerId, "toggle_mnp_bd_m"))
+local tgBdD = nulltonil(getGlobalVar(triggerId, "toggle_mnp_bd_d"))
 -- 생리 변수(기간마다 작용됨)
-local tgCycle = getGlobalVar(triggerId, "toggle_mnp_cycle")
-local tgCycleT = getGlobalVar(triggerId, "toggle_mnp_cycle_t") or "28"
+local tgCycle = nulltonil(getGlobalVar(triggerId, "toggle_mnp_cycle"))
+local tgCycleT = nulltonil(getGlobalVar(triggerId, "toggle_mnp_cycle_t")) or "28"
 -- 임신 확률 변수(매번 적용됨)
-local tgFert = getGlobalVar(triggerId, "toggle_mnp_fert")
+local tgFert = nulltonil(getGlobalVar(triggerId, "toggle_mnp_fert"))
 -- 임신 변수(기간마다 적용됨)
-local tgPregT = getGlobalVar(triggerId, "toggle_mnp_preg_t") or "37"
+local tgPregT = nulltonil(getGlobalVar(triggerId, "toggle_mnp_preg_t")) or "37"
 -- 상태창 인터페이스 변수
-local tgInterface = getGlobalVar(triggerId, "toggle_mnp_interface")
+local tgInterface = nulltonil(getGlobalVar(triggerId, "toggle_mnp_interface"))
 
 -- 함수들
 -- 랜덤
@@ -33,10 +36,6 @@ end
 -- 랜덤정수
 function randomInt(min, max)
     return math.floor(randomReal(min, max + 1))
-end
-
-local function nulltonil(value)
-    return (value ~= "null") and value or nil
 end
 
 function FunixMatch(y, m, d, hr, min, ampm)
@@ -119,6 +118,7 @@ local seasonMap = {
 }
 
 function Fcycle(age, cycle, cyclet)
+    cyclet = tonumber(cyclet)
     if age < 12 then
         age = 12
     elseif age > 50 then
@@ -135,7 +135,7 @@ function Fcycle(age, cycle, cyclet)
         basecycle = 0.0098 * (age - 42)^3 + 0.031 * (age - 42)^2 + cyclet
     end
 
-    local cycle = tonumber(cycle)
+    cycle = tonumber(cycle)
     local range = {min = 0, max = 0}
     if cycle == 0 then
         range.min = 0
@@ -277,70 +277,70 @@ function binary(prob)
 end
 
 listenEdit("editInput", function(triggerId, data)
-    lastcharmsg = getChat(-1).data
+    print("============== editInput ===============")
+    local lastcharmsgtable = getChat(triggerId, -1)
     lastusermsg = data
-    local prevdata = getGlobalVar(triggerId, "mnp_datatable")
-    if not lastcharmsg and not prevdata then
+    local prevdata = getState(triggerId, "mnp_datatable")
+    if not lastcharmsgtable and not prevdata then
+        lastcharmsg = getCharacterFirstMessage(triggerId):await()
         -- 토글값 가져오기
         -- 시작 시간 변수
-        local tgYear = getGlobalVar(triggerId, "toggle_mnp_year") or "2024"
-        local tgMonth = getGlobalVar(triggerId, "toggle_mnp_month") or "03"
-        local tgDay = getGlobalVar(triggerId, "toggle_mnp_day") or "04"
-        local tgHour = getGlobalVar(triggerId, "toggle_mnp_hour") or "08"
-        local tgMinute = getGlobalVar(triggerId, "toggle_mnp_minute") or "00"
-        local tgWeek = getGlobalVar(triggerId, "toggle_mnp_week")
-        local tgAmpm = getGlobalVar(triggerId, "toggle_mnp_ampm")
+        local tgYear = nulltonil(getGlobalVar(triggerId, "toggle_mnp_year")) or "2024"
+        local tgMonth = nulltonil(getGlobalVar(triggerId, "toggle_mnp_month")) or "03"
+        local tgDay = nulltonil(getGlobalVar(triggerId, "toggle_mnp_day")) or "04"
+        local tgHour = nulltonil(getGlobalVar(triggerId, "toggle_mnp_hour")) or "08"
+        local tgMinute = nulltonil(getGlobalVar(triggerId, "toggle_mnp_minute")) or "00"
+        local tgWeek = nulltonil(getGlobalVar(triggerId, "toggle_mnp_week"))
+        local tgAmpm = nulltonil(getGlobalVar(triggerId, "toggle_mnp_ampm"))
         -- 시작 생리 변수
-        local tgStart = getGlobalVar(triggerId, "toggle_mnp_start")
-        local tgStartT = getGlobalVar(triggerId, "toggle_mnp_start_t")
+        local tgStart = nulltonil(getGlobalVar(triggerId, "toggle_mnp_start"))
+        local tgStartT = nulltonil(getGlobalVar(triggerId, "toggle_mnp_start_t"))
         -- 시작 임신 변수
-        local tgPreg = getGlobalVar(triggerId, "toggle_mnp_preg")
-        local tgBaby = getGlobalVar(triggerId, "toggle_mnp_baby") or "20"
+        local tgPreg = nulltonil(getGlobalVar(triggerId, "toggle_mnp_preg"))
+        local tgBaby = nulltonil(getGlobalVar(triggerId, "toggle_mnp_baby")) or "20"
         -- 추후 LLM 판단 변수
-        local tgCc = getGlobalVar(triggerId, "toggle_mnp_cc")
-        local tgSex = getGlobalVar(triggerId, "toggle_mnp_sex")
-        local tgCp = getGlobalVar(triggerId, "toggle_mnp_cp")
-        local tgBirth = getGlobalVar(triggerId, "toggle_mnp_birth")
+        local tgCc = nulltonil(getGlobalVar(triggerId, "toggle_mnp_cc"))
+        local tgSex = nulltonil(getGlobalVar(triggerId, "toggle_mnp_sex"))
+        local tgCp = nulltonil(getGlobalVar(triggerId, "toggle_mnp_cp"))
+        local tgBirth = nulltonil(getGlobalVar(triggerId, "toggle_mnp_birth"))
 
         -- 변수 확인
-        if string.match(tgYear, "^%d+$") and
-            string.match(tgMonth, "^%d+$") and
-            string.match(tgDay, "^%d+$") and
-            string.match(tgHour, "^%d+$") and
-            string.match(tgMinute, "^%d+$") and
-            string.match(tgAge, "^%d+$") and
-            string.match(tgBaby, "^%d+$") and
-            string.match(tgCycleT, "^%d+$") and
-            string.match(tgPregT, "^%d+$") then
-        else
+        if not tonumber(tgYear) or
+        not tonumber(tgMonth) or
+        not tonumber(tgDay) or
+        not tonumber(tgHour) or
+        not tonumber(tgMinute) or
+        not tonumber(tgAge) or
+        not tonumber(tgBaby) or
+        not tonumber(tgCycleT) or
+        not tonumber(tgPregT) then
             alertError(triggerId, "숫자만 입력하세요.")
             stopChat(triggerId)
         end
 
-        if tgBdY then
-            if tgBdM and tgBdD then
-                if string.match(tgBdY, "^%d+$") and
-                    string.match(tgBdM, "^%d+$") and
-                    string.match(tgBdD, "^%d+$") then
-                else
-                    alertError(triggerId, "생일은 숫자만 입력하세요.")
-                    stopChat(triggerId)
-                end
-            else
-                tgBdM = randomInt(1, 12)
-                tgBdD = randomInt(1, 28)
+        if tgBdY and tgBdM and tgBdD then
+            if not tonumber(tgBdY) or
+            not tonumber(tgBdM) or
+            not tonumber(tgBdD) then
+                alertError(triggerId, "생일은 숫자만 입력하세요.")
+                stopChat(triggerId)
+                return
             end
+        elseif tgBdY then
+            tgBdM = randomInt(1, 12)
+            tgBdD = randomInt(1, 28)
         end
 
-        if tgStartT then
-            if not string.match(tgStartT, "^%d+$") then
+        if tgStartT ~= nil then
+            local num = tonumber(tgStartT)
+            if num == nil then
                 alertError(triggerId, "생리 시작일은 숫자만 입력하세요.")
                 stopChat(triggerId)
-            elseif tonumber(tgStartT) < 0 or tonumber(tgStartT) > 28 then
+            elseif num < 0 or num > 28 then
                 alertError(triggerId, "생리 시작일은 0~28 사이의 숫자로 입력하세요.")
                 stopChat(triggerId)
             end
-        end
+        end        
 
         if tonumber(tgCycleT) < 4 then
             alertError(triggerId, "생리 주기가 4일 이하인 경우, 자동으로 4일로 설정됩니다.")
@@ -387,19 +387,19 @@ listenEdit("editInput", function(triggerId, data)
 
         local firstinterface, firstinterface1, firstinterface2, firstinterface3
         if tgInterface == "0" then
-            firstinterface1 = string.format("{date: %s, time: %s, location: , characters: }",
+            firstinterface1 = string.format("[date: %s, time: %s, location: , characters: ]",
                 tgDate, tgTime)
-            firstinterface2 = string.format("{contraception: %s, sex: %s, ejac: %s, birth: %s}",
+            firstinterface2 = string.format("[contraception: %s, sex: %s, ejac: %s, birth: %s]",
                 tgCc, tgSex, tgCp, tgBirth)
-            firstinterface3 = "{others: }"
+            firstinterface3 = "[others: ]"
             firstinterface = firstinterface1 .. "\n" ..
                 firstinterface2 .. "\n" ..
                 firstinterface3
-            unixMatch = "{date:%s*(%d%d%d%d)-(%d%d)-(%d%d),%s*time:%s*(%d%d):(%d%d)%s*([AP]M)"
+            unixMatch = "%[date:%s*(%d%d%d%d)-(%d%d)-(%d%d),%s*time:%s*(%d%d):(%d%d)%s*([AP]M)"
         elseif tgInterface == "1" then
             firstinterface1 = string.format("[Date: %s | Season: %s | Time: %s | Location: | Characters: | Others: ]",
                 tgDate, tgSeason, tgTime)
-            firstinterface2 = string.format("{contraception: %s, sex: %s, ejac: %s, birth: %s}",
+            firstinterface2 = string.format("[contraception: %s, sex: %s, ejac: %s, birth: %s]",
                 tgCc, tgSex, tgCp, tgBirth)
             firstinterface = firstinterface1 .. "\n" ..
                 firstinterface2
@@ -414,6 +414,8 @@ listenEdit("editInput", function(triggerId, data)
         setCharacterFirstMessage(triggerId, lastcharmsg)
 
         function mensStart(start, start_t, cycle)
+            start_t = tonumber(start_t)
+            cycle = tonumber(cycle)
             if start_t then
                 return start_t / 28 * cycle
             end
@@ -477,10 +479,12 @@ listenEdit("editInput", function(triggerId, data)
             end
         end
 
-        local Cycle = Fcycle(tgAgeUnixY, tgCycle, tgCycleT)
-        setChatVar(triggerId, "mnp_cycle", Cycle)
+        local lastCycle = Fcycle(tgAgeUnixY, tgCycle, tgCycleT)
+        local Cycle = {lastCycle}
+        setState(triggerId, "mnp_cycle", Cycle)
+        setChatVar(triggerId, "mnp_cycle", lastCycle)
 
-        local Mensperiod = mensStart(tgStart, tgStartT, Cycle)
+        local Mensperiod = mensStart(tgStart, tgStartT, lastCycle)
         setChatVar(triggerId, "mnp_mensperiod", Mensperiod)
 
         setChatVar(triggerId, "mnp_preg", tgPreg)
@@ -490,47 +494,43 @@ listenEdit("editInput", function(triggerId, data)
     end
 
     if tgInterface == "0" then
-        if getChat(-2).role == "char" then
-            local secondlastchat = getChat(-2).data
-            secondlastchat = string.gsub(secondlastchat, "{others:[^}]+}%s*\n{contraception:[^}]+}%s*\n", "", 1)
-        else
-            local secondlastchat = getChat(-3).data
-            secondlastchat = string.gsub(secondlastchat, "{others:[^}]+}%s*\n{contraception:[^}]+}%s*\n", "", 1)
+        if getChat(triggerId, -3) then
+            if getChat(triggerId, -2).role == "char" then
+                local secondlastchat = getChat(triggerId, -2).data
+                secondlastchat = string.gsub(secondlastchat, "%[others:[^]]+%]%s*\n%[contraception:[^]]+%]%s*\n", "", 1)
+            else
+                local secondlastchat = getChat(triggerId, -3).data
+                secondlastchat = string.gsub(secondlastchat, "%[others:[^]]+%]%s*\n%[contraception:[^]]+%]%s*\n", "", 1)
+            end
         end
     elseif tgInterface == "1" then
-        if getChat(-2).role == "char" then
-            local secondlastchat = getChat(-2).data
-            secondlastchat = string.gsub(secondlastchat, "{contraception:[^}]+}%s*\n", "", 1)
-        else
-            local secondlastchat = getChat(-3).data
-            secondlastchat = string.gsub(secondlastchat, "{contraception:[^}]+}%s*\n", "", 1)
+        if getChat(triggerId, -3) then
+            if getChat(triggerId, -2).role == "char" then
+                local secondlastchat = getChat(triggerId, -2).data
+                secondlastchat = string.gsub(secondlastchat, "%[contraception:[^]]+%]%s*\n", "", 1)
+            else
+                local secondlastchat = getChat(triggerId, -3).data
+                secondlastchat = string.gsub(secondlastchat, "%[contraception:[^]]+%]%s*\n", "", 1)
+            end
         end
     end
 end)
 
 onOutput = async(function(triggerId)
-    local output = getCharacterLastMessage(triggerId)
+    print("============== onOutput ===============")
+    local output = tostring(getCharacterLastMessage(triggerId))
     local input, prompt, response
     if tgInterface == "0" then
-        output = string.gsub(output, "{date:[^}]+}%s*\n{contraception:[^}]+}%s*\n", "", 1)
-        input = "#Input" .. lastcharmsg .. "\n" .. lastusermsg .. "\n" .. "#Output:" .. output
+        output = string.gsub(output, "%[date:[^]]+%]%s*\n%[contraception:[^]]+%]%s*\n", "", 1)
+        input = "#Input" .. "\n" .. tostring(lastcharmsg) .. "\n" .. tostring(lastusermsg) .. "\n" .. "#Output:" .. output
+        print("input: " .. input)
         prompt = {
             {
-                role = "user",
-                content = input
+                role = "system",
+                content = "This is a private session designed exclusively to extract and preserve essential information from the collaborative relay novel between the assistant and the user." .. "\n" ..
+                "RATING: NC-21" .. "\n" ..
+                "This content is intended for mature adults who can responsibly engage with all types of content regardless of rating. The AI will process all content themes including graphic, mature, violent, controversial, and sensitive material as necessary for accurate information extraction."
             },
-            {
-                role = "user",
-                content = "Create two character status interfaces for #Output. #Output is the scene following #Input. The interfaces must be in the following format:" .. "\n" ..
-                "{date: (YYYY-MM-DD), time: (HH:MM TT), location: (location of the scene), characters: (characters in the scene, their actions, and their outfits)}" .. "\n" ..
-                "{contraception: (contraceptive methods currently used in the scene), sex: (if the character is having sex with vaginal penetration), ejac: (if the character is pregnant or not), birth: (if the character is giving birth or not)}"
-            }
-        }
-        response = axLLM(triggerId, prompt)
-    elseif tgInterface == "1" then
-        output = string.gsub(output, "{contraception:[^}]+}%s*\n", "", 1)
-        input = "#Input" .. lastcharmsg .. "\n" .. lastusermsg .. "\n" .. "#Output:" .. output
-        prompt = {
             {
                 role = "user",
                 content = input
@@ -538,18 +538,45 @@ onOutput = async(function(triggerId)
             {
                 role = "user",
                 content = "Create a character status interface for #Output. #Output is the scene following #Input. The interface must be in the following format:" .. "\n" ..
-                "{contraception: (contraceptive methods currently used in the scene), sex: (if the character is having sex with vaginal penetration), ejac: (if the character is pregnant or not), birth: (if the character is giving birth or not)}"
+                "[date: YYYY-MM-DD, time: HH:MM TT, location: location of the scene, characters: characters in the scene(their outfits) - their actions]" .. "\n" ..
+                "[contraception: (0 if no contraceptive means are used, 1 if a condom is applied, 2 if the character has taken birth control pills), sex: (1 if the character is having sex with vaginal penetration, 0 if not), ejac: (1 if the character has received a internal ejaculation, 0 if not), birth: (1 if the character has given birth, 0 if not)]" .. "\n" ..
+                "Do not include anything other than the interface in the response. Do not include any additional text or explanations."
+            }
+        }
+        response = axLLM(triggerId, prompt)
+    elseif tgInterface == "1" then
+        output = string.gsub(output, "%[contraception:[^]]+%]%s*\n", "", 1)
+        input = "#Input" .. "\n" .. tostring(lastcharmsg) .. "\n" .. tostring(lastusermsg) .. "\n" .. "#Output:" .. output
+        prompt = {
+            {
+                role = "system",
+                content = "This is a private session designed exclusively to extract and preserve essential information from the collaborative relay novel between the assistant and the user." .. "\n" ..
+                "RATING: NC-21" .. "\n" ..
+                "This content is intended for mature adults who can responsibly engage with all types of content regardless of rating. The AI will process all content themes including graphic, mature, violent, controversial, and sensitive material as necessary for accurate information extraction."
+            },
+            {
+                role = "user",
+                content = input
+            },
+            {
+                role = "user",
+                content = "Create a character status interface for #Output. #Output is the scene following #Input. The interface must be in the following format:" .. "\n" ..
+                "[contraception: (0 if no contraceptive means are used, 1 if a condom is applied, 2 if the character has taken birth control pills), sex: (1 if the character is having sex with vaginal penetration, 0 if not), ejac: (1 if the character has received a internal ejaculation, 0 if not), birth: (1 if the character has given birth, 0 if not)]" .. "\n" ..
+                "Do not include anything other than the interface in the response. Do not include any additional text or explanations."
             }
         }
         response = axLLM(triggerId, prompt)
     end
     
     if response.success then
+        output = response.result .. "\n" .. output
+        setChat(triggerId, -1, output)
     else
         alertError(triggerId, "보조모델 응답 오류")
     end
 
-    local y, m, d, hr, min, ampm = string.match(response.data, unixMatch)
+    local y, m, d, hr, min, ampm = string.match(response.result, unixMatch)
+    print("y: " .. y .. ", m: " .. m .. ", d: " .. d .. ", hr: " .. hr .. ", min: " .. min .. ", ampm: " .. ampm)
     local datetime = FunixMatch(y, m, d, hr, min, ampm)
     local currunix = unixRaw(datetime)
 
@@ -563,7 +590,7 @@ onOutput = async(function(triggerId)
 
     local unixdiff = currunix - prevunix
 
-    local Cc, Sex, Cp, Birth = string.match(response.data, "{contraception:%s*([^,]+),%s*sex:%s*([^,]+),%s*ejac:%s*([^,]+),%s*birth:%s*([^}]+)}")
+    local Cc, Sex, Cp, Birth = string.match(response.result, "%[contraception:%s*([^,]+),%s*sex:%s*([^,]+),%s*ejac:%s*([^,]+),%s*birth:%s*([^}]+)%]")
     local Preg = getChatVar(triggerId, "mnp_preg")
     local Baby = getChatVar(triggerId, "mnp_baby")
     if Preg == "1" and Birth == "0" then
@@ -577,11 +604,11 @@ onOutput = async(function(triggerId)
     elseif Preg == "0" then
         local Mensperiod = getChatVar(triggerId, "mnp_mensperiod")
         local Cycle = getChatVar(triggerId, "mnp_cycle")
-        local Cycle = Cycle[#Cycle]
         Mensperiod, Cycle = calculateCyclesPeriod(Mensperiod, currunix, prevunix, tgAgeUnixY, tgCycle, tgCycleT, tgUnix, Cycle)
         setChatVar(triggerId, "mnp_mensperiod", Mensperiod)
-        setChatVar(triggerId, "mnp_cycle", Cycle)
-        local Cycle = Cycle[#Cycle]
+        setState(triggerId, "mnp_cycle", Cycle)
+        local lastCycle = Cycle[#Cycle]
+        setChatVar(triggerId, "mnp_cycle", lastCycle)
 
         local pregChance
         if tgFert == "0" then

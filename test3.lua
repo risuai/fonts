@@ -1,6 +1,7 @@
 -- 변수 설정
 local tgAgeUnixY
 local tgUnix
+local unixMatch
 local lastcharmsg
 local lastusermsg
 
@@ -91,14 +92,6 @@ function unixYear(datetime)
     end
 end
 
-if tgBdY then
-    local tgBdDatetime = unixMatch(tgBdY, tgBdM, tgBdD, "12", "00", "PM")
-    local tgBdUnixY = unixYear(tgBdDatetime)
-    tgAgeUnixY = (tgUnixY - tgBdUnixY)
-else
-    tgAgeUnixY = tonumber(tgAge)
-end
-
 local dayMap = {
     [0] = "일",
     [1] = "월",
@@ -109,10 +102,6 @@ local dayMap = {
     [6] = "토",
     [7] = "일"
 }
-if tgWeek == "0" then
-    tgWeek = os.date("%w", tgUnix)
-end
-tgWeek = dayMap[tonumber(tgWeek)]
 
 local seasonMap = {
     [1] = "겨울",
@@ -128,18 +117,6 @@ local seasonMap = {
     [11] = "가을",
     [12] = "겨울"
 }
-tgSeason = seasonMap[tonumber(tgMonth)]
-
-tgHour = tonumber(tgHour)
-if tgAmpm == "PM" then
-    if tgHour < 12 then
-        tgHour = tgHour + 12
-    end
-elseif tgAmpm == "AM" then
-    if tgHour == 12 then
-        tgHour = 0
-    end
-end
 
 function cycle(age, cycle, cyclet)
     if age < 12 then
@@ -383,7 +360,32 @@ listenEdit("editInput", function(triggerId, data)
         tgUnix = unixRaw(tgDatetime)
         local tgUnixY = unixYear(tgDatetime)
 
-        local firstinterface, firstinterface1, firstinterface2, firstinterface3, unixMatch
+        if tgBdY then
+            local tgBdDatetime = unixMatch(tgBdY, tgBdM, tgBdD, "12", "00", "PM")
+            local tgBdUnixY = unixYear(tgBdDatetime)
+            tgAgeUnixY = (tgUnixY - tgBdUnixY)
+        else
+            tgAgeUnixY = tonumber(tgAge)
+        end
+
+        if tgWeek == "0" then
+            tgWeek = os.date("%w", tgUnix)
+        end
+        tgWeek = dayMap[tonumber(tgWeek)]
+        tgSeason = seasonMap[tonumber(tgMonth)]
+
+        tgHour = tonumber(tgHour)
+        if tgAmpm == "PM" then
+            if tgHour < 12 then
+                tgHour = tgHour + 12
+            end
+        elseif tgAmpm == "AM" then
+            if tgHour == 12 then
+                tgHour = 0
+            end
+        end
+
+        local firstinterface, firstinterface1, firstinterface2, firstinterface3
         if tgInterface == "0" then
             firstinterface1 = string.format("{date: %s, time: %s, location: , characters: }",
                 tgDate, tgTime)
@@ -482,6 +484,7 @@ listenEdit("editInput", function(triggerId, data)
         setChatVar(triggerId, "mnp_mensperiod", Mensperiod)
 
         setChatVar(triggerId, "mnp_preg", tgPreg)
+        setChatVar(triggerId, "mnp_baby", tgBaby)
     else
         lastcharmsg = getCharacterLastMessage(triggerId)
     end
@@ -562,11 +565,15 @@ onOutput = async(function(triggerId)
 
     local Cc, Sex, Cp, Birth = string.match(response.data, "{contraception:%s*([^,]+),%s*sex:%s*([^,]+),%s*ejac:%s*([^,]+),%s*birth:%s*([^}]+)}")
     local Preg = getChatVar(triggerId, "mnp_preg")
+    local Baby = getChatVar(triggerId, "mnp_baby")
     if Preg == "1" and Birth == "0" then
         Baby = Baby + unixdiff/604800
+        setChatVar(triggerId, "mnp_baby", Baby)
     elseif Preg == "1" and Birth == "1" then
         Preg = "0"
         Baby = "-1"
+        setChatVar(triggerId, "mnp_preg", Preg)
+        setChatVar(triggerId, "mnp_baby", Baby)
     elseif Preg == "0" then
         local Mensperiod = getChatVar(triggerId, "mnp_mensperiod")
         local Cycle = getChatVar(triggerId, "mnp_cycle")
@@ -583,6 +590,11 @@ onOutput = async(function(triggerId)
             pregChance = 1
         end
         local Preg = binary(pregChance)
+
+        if Preg == 1 then
+            Baby = 0
+            setChatVar(triggerId, "mnp_baby", Baby)
+        end
 
         setChatVar(triggerId, "mnp_mensperiod", Mensperiod)
         setChatVar(triggerId, "mnp_cycle", Cycle)

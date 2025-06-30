@@ -39,7 +39,7 @@ local function nulltonil(value)
     return (value ~= "null") and value or nil
 end
 
-function unixMatch(y, m, d, hr, min, ampm)
+function FunixMatch(y, m, d, hr, min, ampm)
     local dateStr = y .. "-" .. m .. "-" .. d .. " " .. hr .. ":" .. min .. " " .. ampm
     return dateStr
 end
@@ -118,7 +118,7 @@ local seasonMap = {
     [12] = "겨울"
 }
 
-function cycle(age, cycle, cyclet)
+function Fcycle(age, cycle, cyclet)
     if age < 12 then
         age = 12
     elseif age > 50 then
@@ -183,7 +183,7 @@ function calculateCyclesPeriod(mensperiod, currunix, prevunix, age, tgcycle, cyc
         if iteration == 0 then
             currentcycle = cycle
         else
-            currentcycle = cycle(age, tgcycle, cyclet)
+            currentcycle = Fcycle(age, tgcycle, cyclet)
         end
 
         table.insert(cycles, currentcycle)
@@ -356,12 +356,12 @@ listenEdit("editInput", function(triggerId, data)
         local tgDate = tgYear .. "-" .. tgMonth .. "-" .. tgDay
         local tgTime = tgHour .. ":" .. tgMinute .. " " .. tgAmpm
 
-        local tgDatetime = unixMatch(tgYear, tgMonth, tgDay, tgHour, tgMinute, tgAmpm)
+        local tgDatetime = FunixMatch(tgYear, tgMonth, tgDay, tgHour, tgMinute, tgAmpm)
         tgUnix = unixRaw(tgDatetime)
         local tgUnixY = unixYear(tgDatetime)
 
         if tgBdY then
-            local tgBdDatetime = unixMatch(tgBdY, tgBdM, tgBdD, "12", "00", "PM")
+            local tgBdDatetime = FunixMatch(tgBdY, tgBdM, tgBdD, "12", "00", "PM")
             local tgBdUnixY = unixYear(tgBdDatetime)
             tgAgeUnixY = (tgUnixY - tgBdUnixY)
         else
@@ -477,7 +477,7 @@ listenEdit("editInput", function(triggerId, data)
             end
         end
 
-        local Cycle = cycle(tgAgeUnixY, tgCycle, tgCycleT)
+        local Cycle = Fcycle(tgAgeUnixY, tgCycle, tgCycleT)
         setChatVar(triggerId, "mnp_cycle", Cycle)
 
         local Mensperiod = mensStart(tgStart, tgStartT, Cycle)
@@ -550,11 +550,11 @@ onOutput = async(function(triggerId)
     end
 
     local y, m, d, hr, min, ampm = string.match(response.data, unixMatch)
-    local datetime = unixMatch(y, m, d, hr, min, ampm)
+    local datetime = FunixMatch(y, m, d, hr, min, ampm)
     local currunix = unixRaw(datetime)
 
     y, m, d, hr, min, ampm = string.match(lastcharmsg, unixMatch)
-    datetime = unixMatch(y, m, d, hr, min, ampm)
+    datetime = FunixMatch(y, m, d, hr, min, ampm)
     local prevunix = unixRaw(datetime)
 
     local Week = os.date("%w", currunix)
@@ -577,7 +577,11 @@ onOutput = async(function(triggerId)
     elseif Preg == "0" then
         local Mensperiod = getChatVar(triggerId, "mnp_mensperiod")
         local Cycle = getChatVar(triggerId, "mnp_cycle")
+        local Cycle = Cycle[#Cycle]
         Mensperiod, Cycle = calculateCyclesPeriod(Mensperiod, currunix, prevunix, tgAgeUnixY, tgCycle, tgCycleT, tgUnix, Cycle)
+        setChatVar(triggerId, "mnp_mensperiod", Mensperiod)
+        setChatVar(triggerId, "mnp_cycle", Cycle)
+        local Cycle = Cycle[#Cycle]
 
         local pregChance
         if tgFert == "0" then
@@ -596,8 +600,6 @@ onOutput = async(function(triggerId)
             setChatVar(triggerId, "mnp_baby", Baby)
         end
 
-        setChatVar(triggerId, "mnp_mensperiod", Mensperiod)
-        setChatVar(triggerId, "mnp_cycle", Cycle)
         setChatVar(triggerId, "mnp_preg", Preg)
     end
 

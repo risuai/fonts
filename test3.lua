@@ -1,9 +1,6 @@
 -- 변수 설정
-local tgAgeUnixY
 local tgUnix
 local unixMatch
-local lastcharmsg
-local lastusermsg
 
 -- 토글 값 가져오기
 local function nulltonil(value)
@@ -23,6 +20,14 @@ local tgFert = nulltonil(getGlobalVar(triggerId, "toggle_mnp_fert"))
 local tgPregT = nulltonil(getGlobalVar(triggerId, "toggle_mnp_preg_t")) or "37"
 -- 상태창 인터페이스 변수
 local tgInterface = nulltonil(getGlobalVar(triggerId, "toggle_mnp_interface"))
+
+-- 상태창 파싱
+if tgInterface == "0" then
+    unixMatch = "%[date:%s*(%d%d%d%d)-(%d%d)-(%d%d),%s*time:%s*(%d%d):(%d%d)%s*([AP]M)"
+elseif tgInterface == "1" then
+    unixMatch = "%[Date:%s*(%d%d%d%d)-(%d%d)-(%d%d),%s*Time:%s*(%d%d):(%d%d)%s*([AP]M)"
+elseif tgInterface == "2" then
+end
 
 -- 함수들
 -- 랜덤
@@ -170,9 +175,10 @@ function Fcycle(age, cycle, cyclet)
 end
 
 function calculateCyclesPeriod(mensperiod, currunix, prevunix, age, tgcycle, cyclet, tgunix, cycle)
-    local unixdiff = currunix - prevunix
+    local unixdiff = (currunix - prevunix)/ 86400
     local cyclestartday = prevunix / 86400 - tgunix / 86400 - mensperiod + age * 365.2425
     local current_age_year = cyclestartday / 365.2425
+    print("Current Age Year: " .. current_age_year .. " Unix Diff: " .. unixdiff)
 
     local fullcycleday = 0
     local iteration = 0
@@ -185,6 +191,7 @@ function calculateCyclesPeriod(mensperiod, currunix, prevunix, age, tgcycle, cyc
         else
             currentcycle = Fcycle(age, tgcycle, cyclet)
         end
+        print("Current Cycle: " .. currentcycle .. " Iteration: " .. iteration)
 
         table.insert(cycles, currentcycle)
 
@@ -279,7 +286,8 @@ end
 listenEdit("editInput", function(triggerId, data)
     print("============== editInput ===============")
     local lastcharmsgtable = getChat(triggerId, -1)
-    lastusermsg = data
+    local lastcharmsg
+    local lastusermsg = data
     local prevdata = getState(triggerId, "mnp_datatable")
     if not lastcharmsgtable and not prevdata then
         lastcharmsg = getCharacterFirstMessage(triggerId):await()
@@ -359,7 +367,9 @@ listenEdit("editInput", function(triggerId, data)
         local tgDatetime = FunixMatch(tgYear, tgMonth, tgDay, tgHour, tgMinute, tgAmpm)
         tgUnix = unixRaw(tgDatetime)
         local tgUnixY = unixYear(tgDatetime)
+        setState(triggerId, "mnp_tgunix", tgUnix)
 
+        local tgAgeUnixY
         if tgBdY then
             local tgBdDatetime = FunixMatch(tgBdY, tgBdM, tgBdD, "12", "00", "PM")
             local tgBdUnixY = unixYear(tgBdDatetime)
@@ -367,6 +377,7 @@ listenEdit("editInput", function(triggerId, data)
         else
             tgAgeUnixY = tonumber(tgAge)
         end
+        setState(triggerId, "mnp_ageunixy", tgAgeUnixY)
 
         if tgWeek == "0" then
             tgWeek = os.date("%w", tgUnix)
@@ -395,7 +406,6 @@ listenEdit("editInput", function(triggerId, data)
             firstinterface = firstinterface1 .. "\n" ..
                 firstinterface2 .. "\n" ..
                 firstinterface3
-            unixMatch = "%[date:%s*(%d%d%d%d)-(%d%d)-(%d%d),%s*time:%s*(%d%d):(%d%d)%s*([AP]M)"
         elseif tgInterface == "1" then
             firstinterface1 = string.format("[Date: %s | Season: %s | Time: %s | Location: | Characters: | Others: ]",
                 tgDate, tgSeason, tgTime)
@@ -403,7 +413,6 @@ listenEdit("editInput", function(triggerId, data)
                 tgCc, tgSex, tgCp, tgBirth)
             firstinterface = firstinterface1 .. "\n" ..
                 firstinterface2
-            unixMatch = "%[Date:%s*(%d%d%d%d)-(%d%d)-(%d%d),%s*Time:%s*(%d%d):(%d%d)%s*([AP]M)"
         elseif tgInterface == "2" then
             alertError(triggerId, "커스텀 상태창 호환은 아직 개발 중입니다.")
             stopChat(triggerId)
@@ -491,6 +500,7 @@ listenEdit("editInput", function(triggerId, data)
         setChatVar(triggerId, "mnp_baby", tgBaby)
     else
         lastcharmsg = getCharacterLastMessage(triggerId)
+        lastusermsg = data
     end
 
     if tgInterface == "0" then
@@ -514,16 +524,21 @@ listenEdit("editInput", function(triggerId, data)
             end
         end
     end
+    setState(triggerId, "mnp_lastcharmsg", lastcharmsg)
+    setState(triggerId, "mnp_lastusermsg", lastusermsg)
 end)
 
 onOutput = async(function(triggerId)
     print("============== onOutput ===============")
+    local lastcharmsg = getState(triggerId, "mnp_lastcharmsg")
+    local lastusermsg = getState(triggerId, "mnp_lastusermsg")
+    local tgAgeUnixY = getState(triggerId, "mnp_ageunixy")
+    local tgUnix = getState(triggerId, "mnp_tgunix")
     local output = tostring(getCharacterLastMessage(triggerId))
     local input, prompt, response
     if tgInterface == "0" then
         output = string.gsub(output, "%[date:[^]]+%]%s*\n%[contraception:[^]]+%]%s*\n", "", 1)
-        input = "#Input" .. "\n" .. tostring(lastcharmsg) .. "\n" .. tostring(lastusermsg) .. "\n" .. "#Output:" .. output
-        print("input: " .. input)
+        input = "#Input" .. "\n" .. tostring(lastcharmsg) .. "\n\n" .. tostring(lastusermsg) .. "\n\n" .. "#Output" .. "\n" .. output
         prompt = {
             {
                 role = "system",
@@ -546,7 +561,7 @@ onOutput = async(function(triggerId)
         response = axLLM(triggerId, prompt)
     elseif tgInterface == "1" then
         output = string.gsub(output, "%[contraception:[^]]+%]%s*\n", "", 1)
-        input = "#Input" .. "\n" .. tostring(lastcharmsg) .. "\n" .. tostring(lastusermsg) .. "\n" .. "#Output:" .. output
+        input = "#Input" .. "\n" .. tostring(lastcharmsg) .. "\n\n" .. tostring(lastusermsg) .. "\n\n" .. "#Output" .. "\n" .. output
         prompt = {
             {
                 role = "system",
@@ -570,23 +585,21 @@ onOutput = async(function(triggerId)
     
     if response.success then
         output = response.result .. "\n" .. output
-        setChat(triggerId, -1, output)
     else
         alertError(triggerId, "보조모델 응답 오류")
     end
 
     local y, m, d, hr, min, ampm = string.match(response.result, unixMatch)
-    print("y: " .. y .. ", m: " .. m .. ", d: " .. d .. ", hr: " .. hr .. ", min: " .. min .. ", ampm: " .. ampm)
     local datetime = FunixMatch(y, m, d, hr, min, ampm)
     local currunix = unixRaw(datetime)
-
-    y, m, d, hr, min, ampm = string.match(lastcharmsg, unixMatch)
-    datetime = FunixMatch(y, m, d, hr, min, ampm)
-    local prevunix = unixRaw(datetime)
 
     local Week = os.date("%w", currunix)
     Week = dayMap[Week]
     local Season = seasonMap[tonumber(m)]
+
+    y, m, d, hr, min, ampm = string.match(lastcharmsg, unixMatch)
+    datetime = FunixMatch(y, m, d, hr, min, ampm)
+    local prevunix = unixRaw(datetime)
 
     local unixdiff = currunix - prevunix
 
@@ -602,8 +615,8 @@ onOutput = async(function(triggerId)
         setChatVar(triggerId, "mnp_preg", Preg)
         setChatVar(triggerId, "mnp_baby", Baby)
     elseif Preg == "0" then
-        local Mensperiod = getChatVar(triggerId, "mnp_mensperiod")
-        local Cycle = getChatVar(triggerId, "mnp_cycle")
+        local Mensperiod = tonumber(getChatVar(triggerId, "mnp_mensperiod"))
+        local Cycle = tonumber(getChatVar(triggerId, "mnp_cycle"))
         Mensperiod, Cycle = calculateCyclesPeriod(Mensperiod, currunix, prevunix, tgAgeUnixY, tgCycle, tgCycleT, tgUnix, Cycle)
         setChatVar(triggerId, "mnp_mensperiod", Mensperiod)
         setState(triggerId, "mnp_cycle", Cycle)
@@ -612,18 +625,18 @@ onOutput = async(function(triggerId)
 
         local pregChance
         if tgFert == "0" then
-            pregChance = pregChanceCc(Cc, Sex, Cp) * pregChancePeriod(Mensperiod, Cycle)
+            pregChance = pregChanceCc(Cc, Sex, Cp) * pregChancePeriod(Mensperiod, lastCycle)
         elseif tgFert == "1" then
             pregChance = 0
         elseif tgFert == "2" then
-            pregChance = pregChanceCc(Cc, Sex, Cp) * pregChancePeriod(Mensperiod, Cycle) * 1.5
+            pregChance = pregChanceCc(Cc, Sex, Cp) * pregChancePeriod(Mensperiod, lastCycle) * 1.5
         elseif tgFert == "3" then
             pregChance = 1
         end
-        local Preg = binary(pregChance)
+        Preg = binary(pregChance)
 
         if Preg == 1 then
-            Baby = 0
+            Baby = "0"
             setChatVar(triggerId, "mnp_baby", Baby)
         end
 

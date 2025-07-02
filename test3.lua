@@ -1212,6 +1212,9 @@ onOutput = async(function(triggerId)
             local lastdata = datatable[lastmsgnumber]
             
             -- 롤백 이후 테이블 드랍
+            for i = #datatable, lastmsgnumber + 1, -1 do
+                datatable[i] = nil
+            end
 
 			local lastCycle = lastdata.cycle[2]
 			local Mensperiod = lastdata.mensperiod
@@ -1255,6 +1258,15 @@ onOutput = async(function(triggerId)
 	        }
 
 	        table.insert(datatable, newentry)
+
+	        output = response.result .. "\n" .. weekseason .. output .. "\n[#" .. #datatable + 1 .. "]"
+    
+	        setChat(triggerId, -1, output)
+	        setChatVar(triggerId, "mnp_cycle", lastCycle)
+	        setChatVar(triggerId, "mnp_mensperiod", Mensperiod)
+	        setChatVar(triggerId, "mnp_preg", Preg)
+	        setChatVar(triggerId, "mnp_baby", Baby)
+	        setState(triggerId, "mnp_datatable", datatable)
         end
 
         if tgInterface == "0" then

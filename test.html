@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<head>
+    <meta charset=utf8>
+    <style>
+        @font-face {
+            font-family: 'GongGothicMedium';
+            src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_20-10@1.0/GongGothicMedium.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        body {
+            background-color: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .status-container-compact {
+            font-family: 'GongGothicMedium', sans-serif;
+            width: 93%;
+            max-width: 600px;
+            margin: 0.2em auto;
+            border-radius: 6px;
+            background-color: #1e1f22;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+            border: 1px solid #3a3c40;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-main-section {
+            display: flex;
+            align-items: stretch;
+        }
+
+        .status-portrait-column {
+            width: 200px;
+            flex-shrink: 0;
+            padding: 10px;
+            box-sizing: border-box;
+            background-color: #ffd9d9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid #3a3c40;
+        }
+
+        .status-content-column {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #1e1f22;
+            min-width: 0;
+        }
+
+        .status-name-compact {
+            color: #333;
+            font-size: 1.25em;
+            font-weight: 700;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .status-main-compact {
+            padding: 16px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            font-size: 0.85em;
+            background-color: white;
+            flex-grow: 1;
+        }
+
+        .status-stat-item-compact {
+            background-color: #ffd9d9;
+            color: #333;
+            border-radius: 3px;
+            padding: 8px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #3a3c40;
+            min-height: 28px;
+            overflow: hidden;
+            transition: background-color 0.2s;
+        }
+
+        .status-stat-item-compact:hover {
+            background-color: #ffadad;
+        }
+
+        .status-stat-item-compact strong {
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            padding-top: 0;
+            flex-shrink: 0;
+        }
+
+        .status-stat-item-compact span:last-child {
+            color: #3a3c40; /* Changed for better visibility on light bg */
+            font-weight: 400;
+            text-align: right;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-shrink: 1;
+        }
+
+        /* Styles for the collapsible section */
+        summary {
+            list-style: none; /* Remove default marker */
+            cursor: pointer;
+        }
+
+        summary::-webkit-details-marker {
+            display: none; /* Remove default marker for Safari/Chrome */
+        }
+
+        .collapsible-trigger {
+            display: block;
+            width: 100%;
+            padding: 10px 0;
+            background-color: #cc5d5d;
+            border-top: 1px solid #3a3c40;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: white;
+            user-select: none;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .collapsible-trigger:hover {
+            background-color: #cc7c7c;
+        }
+        
+        .collapsible-content {
+            padding: 16px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            font-size: 0.85em;
+            background-color: white;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="status-container-compact">
+        <div class="status-main-section">
+            <div class="status-portrait-column">
+                <img src="{{#if {{? $toggle_mnp_char==0}}}}{{source::char}}{{/if}}{{#if {{? $toggle_mnp_char==1}}}}{{source::user}}{{/if}}">
+            </div>
+            <div class="status-content-column">
+                <div class="status-main-compact">
+                    <div class="status-name-compact"><strong>{{#if {{? $toggle_mnp_char==0}}}}{{char}}{{/if}}{{#if {{? $toggle_mnp_char==1}}}}{{user}}{{/if}}</strong><span></span>
+                    </div><div class="status-stat-item-compact"><strong>{{#if {{? $toggle_mnp_lang==0}}}}날짜{{/if}}{{#if {{? $toggle_mnp_lang==1}}}}Date{{/if}}{{#if {{? $toggle_mnp_lang==2}}}}日付{{/if}}</strong><span>$1($6) - $7</span>
+                    </div><div class="status-stat-item-compact"><strong>{{#if {{? $toggle_mnp_lang==0}}}}시간{{/if}}{{#if {{? $toggle_mnp_lang==1}}}}Time{{/if}}{{#if {{? $toggle_mnp_lang==2}}}}時間{{/if}}</strong><span>$2</span>
+                    </div><div class="status-stat-item-compact"><strong>{{#if {{? $toggle_mnp_lang==0}}}}장소{{/if}}{{#if {{? $toggle_mnp_lang==1}}}}Location{{/if}}{{#if {{? $toggle_mnp_lang==2}}}}場所{{/if}}</strong><span>$3</span>
+                    </div><div class="status-stat-item-compact"><strong>{{#if {{? $toggle_mnp_lang==0}}}}인물{{/if}}{{#if {{? $toggle_mnp_lang==1}}}}Characters{{/if}}{{#if {{? $toggle_mnp_lang==2}}}}登場人物{{/if}}</strong><span>$4</span>
+                    </div><div class="status-stat-item-compact"><strong>{{#if {{? $toggle_mnp_lang==0}}}}기타 인물{{/if}}{{#if {{? $toggle_mnp_lang==1}}}}Others{{/if}}{{#if {{? $toggle_mnp_lang==2}}}}その他の人物{{/if}}</strong><span>$8</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <details class="collapsible-section">
+            <summary class="collapsible-trigger" aria-controls="additional-info" aria-expanded="false">♀ 생리·임신 상태창 ♀</summary>
+            <div class="collapsible-content" id="additional-info">
+                <div class="status-stat-item-compact"><strong>{{#if {{? $toggle_mnp_lang==0}}}}피임 방법{{/if}}{{#if {{? $toggle_mnp_lang==1}}}}Contraception{{/if}}{{#if {{? $toggle_mnp_lang==2}}}}避妊方法{{/if}}</strong><span>{{#if {{? $toggle_mnp_lang==0}}}}{{#if {{? $5==0}}}}피임 안함{{/if}}{{#if {{? $5==1}}}}콘돔{{/if}}{{#if {{? $5==2}}}}피임약{{/if}}{{#if {{? $5==3}}}}IUD{{/if}}{{/if}}{{#if {{? $toggle_mnp_lang==1}}}}{{#if {{? $5==0}}}}None{{/if}}{{#if {{? $5==1}}}}Condom{{/if}}{{#if {{? $5==2}}}}Birth control{{/if}}{{#if {{? $5==3}}}}IUD{{/if}}{{/if}}{{#if {{? $toggle_mnp_lang==2}}}}{{#if {{? $5==0}}}}避妊なし{{/if}}{{#if {{? $5==1}}}}コンドーム{{/if}}{{#if {{? $5==2}}}}ピル{{/if}}{{#if {{? $5==3}}}}IUD{{/if}}{{/if}}</span>
+                </div><div class="status-stat-item-compact"><strong>{{#if {{? $toggle_mnp_lang==0}}}}신체 상태{{/if}}{{#if {{? $toggle_mnp_lang==1}}}}Reproductive state{{/if}}{{#if {{? $toggle_mnp_lang==2}}}}体調{{/if}}</strong><span>{{#if {{? $toggle_mnp_lang==0}}}}{{#if {{? ($mnp_mensperiod>=0)&($mnp_mensperiod<$mnp_fol)}}}}생리 중{{/if}}{{#if {{? ($mnp_mensperiod>=$mnp_fol)&($mnp_mensperiod<$mnp_ovu)}}}}난포기{{/if}}{{#if {{? ($mnp_mensperiod>=$mnp_ovu)&($mnp_mensperiod<$mnp_lut)}}}}배란일{{/if}}{{#if {{? ($mnp_mensperiod>=$mnp_lut)&($mnp_mensperiod<$mnp_cycle)}}}}황체기{{/if}}{{#if {{? $mnp_postpart==0}}}}산후기{{/if}}{{#if {{? $mnp_preg==1}}}}임신 중{{/if}}{{/if}}{{#if {{? $toggle_mnp_lang==1}}}}{{#if {{? ($mnp_mensperiod>=0)&($mnp_mensperiod<$mnp_fol)}}}}Menses{{/if}}{{#if {{? ($mnp_mensperiod>=$mnp_fol)&($mnp_mensperiod<$mnp_ovu)}}}}Follicular Phase{{/if}}{{#if {{? ($mnp_mensperiod>=$mnp_ovu)&($mnp_mensperiod<$mnp_lut)}}}}Ovulation{{/if}}{{#if {{? ($mnp_mensperiod>=$mnp_lut)&($mnp_mensperiod<$mnp_cycle)}}}}Luteal Phase{{/if}}{{#if {{? $mnp_postpart==0}}}}Post-pregnancy{{/if}}{{#if {{? $mnp_preg==1}}}}Pregnant{{/if}}{{/if}}{{#if {{? $toggle_mnp_lang==2}}}}{{#if {{? ($mnp_mensperiod>=0)&($mnp_mensperiod<$mnp_fol)}}}}生理中{{/if}}{{#if {{? ($mnp_mensperiod>=$mnp_fol)&($mnp_mensperiod<$mnp_ovu)}}}}卵泡期{{/if}}{{#if {{? ($mnp_mensperiod>=$mnp_ovu)&($mnp_mensperiod<$mnp_lut)}}}}排卵日{{/if}}{{#if {{? ($mnp_mensperiod>=$mnp_lut)&($mnp_mensperiod<$mnp_cycle)}}}}黄体期{{/if}}{{#if {{? $mnp_postpart==0}}}}産後期{{/if}}{{#if {{? $mnp_preg==1}}}}妊娠中{{/if}}{{/if}}</span>
+                </div>{{#if {{? $mnp_preg==1}}}}<div class="status-stat-item-compact"><strong>{{#if {{? $toggle_mnp_lang==0}}}}임신 주수{{/if}}{{#if {{? $toggle_mnp_lang==1}}}}Fetal age{{/if}}{{#if {{? $toggle_mnp_lang==2}}}}妊娠週数{{/if}}</strong><span>{{floor::{{? $mnp_baby}}}}{{#if {{? $toggle_mnp_lang==0}}}}주{{/if}}{{#if {{? $toggle_mnp_lang==1}}}}week(s){{/if}}{{#if {{? $toggle_mnp_lang==2}}}}週{{/if}}</span>
+                </div>{{/if}}
+            </div>
+        </details>
+    </div>
+</body>
+</html>
